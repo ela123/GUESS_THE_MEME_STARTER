@@ -1,0 +1,21 @@
+{
+  "name": "guess-the-meme-by-original-sound",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio remotion/src/index.ts",
+    "render": "remotion render remotion/src/index.ts GuessTheMeme output/episode_001_remotion.mp4",
+    "still": "remotion still remotion/src/index.ts GuessTheMeme output/preview.png --frame=500"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.300",
+    "@remotion/media": "^4.0.300",
+    "remotion": "^4.0.300",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "typescript": "^5.7.0"
+  }
+}

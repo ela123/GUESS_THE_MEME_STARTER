@@ -1,0 +1,12 @@
+{
+  "episode_title": "Guess the Meme by Its Original Sound",
+  "round": 1,
+  "original_video": "assets/original_sounds/ocean_meme_original.mp4",
+  "meme_video": "assets/memes/ocean_meme.mp4",
+  "intro_audio": "assets/intro_audio/intro.mp3",
+  "original_audio_start_seconds": 15,
+  "guess_audio_duration_seconds": 10,
+  "countdown_seconds": 3,
+  "reveal_uses_full_meme_video": true,
+  "output": "output/episode_001.mp4"
+}
