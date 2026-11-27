@@ -11,6 +11,8 @@ export const RoundCard: React.FC<{
   const { fps } = useVideoConfig();
 
   const pop = spring({ frame, fps, config: SPRINGS.pop });
+  const fadeOut = interpolate(frame, [20, 30], [1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const opacity = Math.min(pop, fadeOut);
 
   return (
     <AbsoluteFill
@@ -26,7 +28,7 @@ export const RoundCard: React.FC<{
         gap: 28,
       }}
     >
-      <div style={{ transform: `scale(${Math.max(0.8, pop)})`, opacity: pop }}>
+      <div style={{ transform: `scale(${Math.max(0.8, pop)})`, opacity }}>
         <Pill accent>NEXT ROUND</Pill>
       </div>
       <div
@@ -39,7 +41,7 @@ export const RoundCard: React.FC<{
           color: COLORS.textPrimary,
           textAlign: 'center',
           transform: `translateY(${interpolate(pop, [0, 1], [24, 0])}px)`,
-          opacity: pop,
+          opacity,
         }}
       >
         ROUND {roundNumber}

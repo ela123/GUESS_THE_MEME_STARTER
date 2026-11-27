@@ -37,3 +37,18 @@ npm run studio
    npm run render:ci -- ep001 --out "/content/drive/MyDrive/guess_the_meme/output"
    ```
    (Pass `--gl swangle` if WebGL fails on CPU-only machines.)
+
+## Remotion Studio
+
+`remotion/src/Root.tsx` defaults to `remotion/src/defaultEpisode.json` so a fresh clone builds without `public/episodes/`. To preview your own episode in Studio, run `npm run scaffold` first, then open Studio with `--props=public/episodes/<id>/episode.json` (or edit props in the Studio sidebar).
+
+## Naming, Commands & Hygiene
+
+- **File naming**: `1_original.mp4` (or `1_original_ocean.mp4`, `1_ original.mp3`) + `1_Ocean Meme.mp4` inside your episode folder. Media lives on Google Drive and is **never committed** to git.
+- **Commands**:
+  - `npm run scaffold -- ep001 --source "<dir>" --hook challenge`
+  - `npm run validate -- ep001`
+  - `npm test`
+  - `npm run render -- ep001`
+  - `npm run render:ci -- ep001 --quick`
+  - `npm run stills -- ep001 --safe`

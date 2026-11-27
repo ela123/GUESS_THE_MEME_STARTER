@@ -3,8 +3,8 @@ import { Composition, staticFile } from 'remotion';
 import { getVideoMetadata } from '@remotion/media-utils';
 import { GuessTheMeme } from './GuessTheMeme';
 import { EpisodeConfig, EpisodeSchema } from './types';
-import { buildTimeline } from './timeline';
-import defaultEpisode from '../../public/episodes/ep001/episode.json';
+import { assertTimelineCoverage, buildTimeline } from './timeline';
+import defaultEpisode from './defaultEpisode.json';
 
 const FPS = 30;
 
@@ -41,6 +41,7 @@ export const RemotionRoot: React.FC = () => {
           })),
         };
         const timeline = buildTimeline(updatedProps, FPS);
+        assertTimelineCoverage(timeline);
 
         return {
           durationInFrames: timeline.totalFrames,

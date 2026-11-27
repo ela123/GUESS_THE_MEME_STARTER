@@ -1,44 +1,51 @@
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
+import { buildTimeline, assertTimelineCoverage } from '../remotion/src/timeline.ts';
 
-// Read timeline.ts constants and verify math for 1, 3, 5, 6, 10 rounds
-const TRANSITION_FRAMES = 12;
-const INTRO_FRAMES = 72;
-const SCORE_FRAMES = 90;
+const FPS = 30;
+const guessOptions = [2, 5, 15];
+const memeOptions = [3, 8, 20];
 
-function buildTimeline(roundCount, fps = 30) {
-  const countdownFrames = 3 * fps;
-  const rounds = Array.from({ length: roundCount }, (_, i) => ({
-    round: i + 1,
-    guessFrames: 5 * fps,
-    countdownFrames,
-    revealFrames: 8 * fps,
-  }));
-  const roundsSum = rounds.reduce((acc, r) => acc + r.guessFrames + r.countdownFrames + r.revealFrames, 0);
-  const transitionCount = roundCount * 3 + 1;
-  const totalFrames = Math.max(1, INTRO_FRAMES + roundsSum + SCORE_FRAMES - transitionCount * TRANSITION_FRAMES);
-  return { introFrames: INTRO_FRAMES, countdownFrames, scoreFrames: SCORE_FRAMES, transitionFrames: TRANSITION_FRAMES, rounds, totalFrames };
-}
+for (const countdownSeconds of [1, 10]) {
+  for (const n of [1, 3, 5, 6, 10]) {
+    const episode = {
+      episode_id: `test_${n}_cd${countdownSeconds}`,
+      episode_title: 'Test Episode',
+      hook: 'classic',
+      intro_audio: 'intro.mp3',
+      countdown_seconds: countdownSeconds,
+      gap_seconds: 1.5,
+      rounds: Array.from({ length: n }, (_, i) => ({
+        round: i + 1,
+        title: `Round ${i + 1}`,
+        clue_file: 'intro.mp3',
+        clue_type: 'audio',
+        clue_source: 'original',
+        clue_start_seconds: 0,
+        guess_seconds: guessOptions[i % guessOptions.length],
+        meme_file: 'intro.mp3',
+        meme_duration_seconds: memeOptions[i % memeOptions.length],
+      })),
+    };
 
-for (const n of [1, 3, 5, 6, 10]) {
-  const t = buildTimeline(n);
-  assert.ok(t.transitionFrames <= 60, `Transition > 60 frames for n=${n}`);
-  const durations = [
-    t.introFrames,
-    ...t.rounds.flatMap((r) => [r.guessFrames, r.countdownFrames, r.revealFrames]),
-    t.scoreFrames,
-  ];
-  const intervals = [];
-  let cursor = 0;
-  for (let i = 0; i < durations.length; i++) {
-    const start = i === 0 ? 0 : cursor - t.transitionFrames;
-    const end = start + durations[i];
-    intervals.push([start, end]);
-    cursor = end;
+    const t = buildTimeline(episode, FPS);
+    assertTimelineCoverage(t);
+
+    assert.ok(t.transitionFrames <= 60, `transitionFrames > 60 for n=${n}`);
+    const sceneDurations = [
+      t.introFrames,
+      ...t.rounds.flatMap((r) => [r.guessFrames, r.countdownFrames, r.revealFrames]),
+      t.scoreFrames,
+    ];
+    const minScene = Math.min(...sceneDurations);
+    assert.ok(
+      t.transitionFrames <= minScene,
+      `transitionFrames (${t.transitionFrames}) > shortest scene (${minScene}) for n=${n}, cd=${countdownSeconds}`
+    );
+
+    const sumScenes = sceneDurations.reduce((a, b) => a + b, 0);
+    const overlaps = (n * 3 + 1) * t.transitionFrames;
+    assert.equal(t.totalFrames, sumScenes - overlaps, `totalFrames mismatch for n=${n}`);
+
+    console.log(`PASS timeline n=${n} cd=${countdownSeconds}: totalFrames=${t.totalFrames}`);
   }
-  assert.equal(intervals[intervals.length - 1][1], t.totalFrames, `End mismatch for n=${n}`);
-  for (let f = 0; f < t.totalFrames; f++) {
-    assert.ok(intervals.some(([s, e]) => f >= s && f < e), `Gap at frame ${f} for n=${n}`);
-  }
-  console.log(`PASS timeline n=${n}: totalFrames=${t.totalFrames}, transitions=${n * 3 + 1}`);
 }

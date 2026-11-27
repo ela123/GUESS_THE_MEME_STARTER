@@ -49,6 +49,7 @@ export const GuessTheMeme: React.FC<EpisodeConfig> = (episode) => {
                   startSeconds={r.clue_start_seconds}
                   durationInFrames={item.guessFrames}
                   roundNumber={r.round}
+                  totalRounds={totalRounds}
                   clueDisplay={clueDisplay}
                 />
               </TransitionSeries.Sequence>

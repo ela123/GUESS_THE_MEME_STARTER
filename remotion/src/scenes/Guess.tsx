@@ -4,6 +4,7 @@ import { AudioVisualizer } from '../AudioVisualizer';
 import { Pill } from '../components/Pill';
 import { ProgressBar } from '../components/ProgressBar';
 import { SquareMediaFrame } from '../components/SquareMediaFrame';
+import { RoundCard } from './RoundCard';
 import { COLORS, FONTS, RADII, SAFE_ZONE, SPRINGS } from '../theme';
 
 const VIDEO_EXTS = ['.mp4', '.mov', '.webm', '.mkv', '.m4v'];
@@ -25,12 +26,14 @@ export const GuessScene: React.FC<{
   startSeconds?: number;
   durationInFrames: number;
   roundNumber?: number;
+  totalRounds?: number;
   clueDisplay?: 'auto' | 'video' | 'audio';
 }> = ({
   videoSrc,
   startSeconds = 15,
   durationInFrames,
   roundNumber = 1,
+  totalRounds = 1,
   clueDisplay = 'auto',
 }) => {
   const frame = useCurrentFrame();
@@ -56,18 +59,42 @@ export const GuessScene: React.FC<{
           justifyContent: 'space-between',
         }}
       >
-        {/* Top Header + Progress */}
+        {/* Top Header + Segmented Round Strip + Progress */}
         <div
           style={{
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
-            gap: 20,
-            opacity: cardSpring,
-            transform: `translateY(${interpolate(cardSpring, [0, 1], [-24, 0])}px)`,
+            gap: 12,
           }}
         >
+          {totalRounds > 1 && (
+            <div style={{ display: 'flex', gap: 6, width: '100%' }}>
+              {Array.from({ length: totalRounds }, (_, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    flex: 1,
+                    height: 6,
+                    borderRadius: 999,
+                    backgroundColor: idx < roundNumber ? COLORS.accentPrimary : 'rgba(255,255,255,0.16)',
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+          <div
+            style={{
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 20,
+              opacity: cardSpring,
+              transform: `translateY(${interpolate(cardSpring, [0, 1], [-24, 0])}px)`,
+            }}
+          >
           <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Pill>ROUND {roundNumber.toString().padStart(2, '0')}</Pill>
             <Pill accent>{`00:${remainingSec.toString().padStart(2, '0')}`}</Pill>
@@ -112,8 +139,8 @@ export const GuessScene: React.FC<{
         ) : (
           <div
             style={{
-              width: 900,
-              height: 900,
+              width: 760,
+              height: 760,
               borderRadius: RADII.lg,
               backgroundColor: COLORS.surface,
               border: `1px solid ${COLORS.hairline}`,

@@ -25,16 +25,13 @@ export const COLORS = {
   black: '#07070B',
 };
 
-export const SAFE_ZONE = {
-  top: 220,
-  bottom: 540,
-  left: 60,
-  right: 160,
-  horizontal: 60,
-};
+export const SAFE = { top: 220, bottom: 540, left: 140, right: 140 };
+// frame is 1080x1920: content width 800, centred at x = 540, y = 220..1380
 
-export const SAFE = { top: 220, bottom: 540, left: 60, right: 160 };
-// frame is 1080x1920: text must stay inside x 60..920 and y 220..1380
+export const SAFE_ZONE = {
+  ...SAFE,
+  horizontal: SAFE.left,
+};
 
 export const RADII = {
   sm: 16,

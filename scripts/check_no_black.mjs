@@ -1,35 +1,58 @@
-import { execSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
 
-const target = process.argv[2] || 'output/episode_001.mp4';
-const output = execSync(
-  `ffmpeg -i "${target}" -vf signalstats,metadata=print:key=lavfi.signalstats.YAVG -f null - 2>&1`,
-  { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 }
-);
-
-const lines = output.split(/\r?\n/);
-let consecutiveBlack = 0;
-let maxConsecutiveBlack = 0;
-let totalFrames = 0;
-
-for (const line of lines) {
-  const match = line.match(/lavfi\.signalstats\.YAVG=([0-9.]+)/);
-  if (match) {
-    totalFrames++;
-    const yavg = parseFloat(match[1]);
-    if (yavg < 20) {
-      consecutiveBlack++;
-      if (consecutiveBlack > maxConsecutiveBlack) {
-        maxConsecutiveBlack = consecutiveBlack;
-      }
-    } else {
-      consecutiveBlack = 0;
-    }
-  }
-}
-
-console.log(`Checked ${totalFrames} frames. Max consecutive YAVG < 20: ${maxConsecutiveBlack}`);
-if (maxConsecutiveBlack > 2) {
-  console.error(`FAIL: Found ${maxConsecutiveBlack} consecutive black frames (YAVG < 20).`);
+const file = process.argv[2];
+if (!file) {
+  console.error('Usage: npx tsx scripts/check_no_black.mjs <video_path>');
   process.exit(1);
 }
-console.log('PASS: No black frame sequences detected.');
+if (!fs.existsSync(file)) {
+  console.error(`File not found: ${file}`);
+  process.exit(1);
+}
+
+const ffArgs = ['-i', file, '-an', '-vf', 'signalstats,metadata=print:key=lavfi.signalstats.YAVG', '-f', 'null', '-'];
+let res = spawnSync('ffmpeg', ffArgs, { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 });
+if (res.error) {
+  res = spawnSync('npx', ['remotion', 'ffmpeg', ...ffArgs], {
+    encoding: 'utf8',
+    maxBuffer: 50 * 1024 * 1024,
+    shell: process.platform === 'win32',
+  });
+}
+
+const output = `${res.stdout || ''}\n${res.stderr || ''}`;
+const lines = output.split(/\r?\n/);
+
+const FPS = 30;
+let frameIdx = 0;
+let runStart = null;
+const badRuns = [];
+
+for (const line of lines) {
+  const m = line.match(/lavfi\.signalstats\.YAVG=([0-9.]+)/);
+  if (!m) continue;
+  const yavg = Number(m[1]);
+  if (yavg < 20) {
+    if (runStart === null) runStart = frameIdx;
+  } else {
+    if (runStart !== null && frameIdx - runStart > 2) {
+      badRuns.push([runStart, frameIdx - 1]);
+    }
+    runStart = null;
+  }
+  frameIdx++;
+}
+if (runStart !== null && frameIdx - runStart > 2) {
+  badRuns.push([runStart, frameIdx - 1]);
+}
+
+if (badRuns.length > 0) {
+  console.error(`Black-frame check FAILED for ${file}:`);
+  for (const [s, e] of badRuns) {
+    console.error(`  frames ${s}-${e} (${(s / FPS).toFixed(2)}s - ${(e / FPS).toFixed(2)}s)`);
+  }
+  process.exit(1);
+}
+
+console.log(`Black-frame check PASSED for ${file} (${frameIdx} frames checked).`);

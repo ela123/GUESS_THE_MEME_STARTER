@@ -1,0 +1,22 @@
+{
+  "episode_id": "sample",
+  "episode_title": "Guess the Meme by Its Original Sound",
+  "hook": "classic",
+  "intro_audio": "intro.mp3",
+  "countdown_seconds": 3,
+  "gap_seconds": 1.5,
+  "showSafeZone": false,
+  "rounds": [
+    {
+      "round": 1,
+      "title": "Sample Round",
+      "clue_file": "intro.mp3",
+      "clue_type": "audio",
+      "clue_source": "original",
+      "clue_start_seconds": 0,
+      "guess_seconds": 5,
+      "meme_file": "intro.mp3",
+      "meme_duration_seconds": 5
+    }
+  ]
+}
