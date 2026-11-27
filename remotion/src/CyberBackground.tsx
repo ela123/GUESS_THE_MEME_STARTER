@@ -1,131 +1,76 @@
 import React from 'react';
-import { interpolate, useCurrentFrame } from 'remotion';
+import { AbsoluteFill, useCurrentFrame } from 'remotion';
+import { COLORS, FONTS } from './theme';
 
-interface Particle {
-  x: number;
-  y: number;
-  size: number;
-  speed: number;
-  opacity: number;
-  color: string;
-}
-
-const PARTICLES: Particle[] = Array.from({ length: 35 }, (_, i) => ({
-  x: (i * 29) % 100,
-  y: (i * 47) % 100,
-  size: 3 + (i % 5) * 2,
-  speed: 0.2 + (i % 4) * 0.15,
-  opacity: 0.15 + (i % 6) * 0.08,
-  color: i % 3 === 0 ? '#00f2fe' : i % 3 === 1 ? '#ff007a' : '#7928ca',
+const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
+  id: i,
+  x: (i * 47 + 13) % 100,
+  y: (i * 73 + 29) % 100,
+  size: 2 + (i % 4),
+  speed: 0.08 + (i % 5) * 0.03,
+  opacity: 0.12 + (i % 4) * 0.06,
 }));
 
+const GRAIN_SVG = `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.045'/%3E%3C/svg%3E")`;
+
 export const CyberBackground: React.FC<{
-  primaryColor?: string;
-  secondaryColor?: string;
-  intensity?: number;
-  children?: React.ReactNode;
-}> = ({
-  primaryColor = '#ff007a',
-  secondaryColor = '#00f2fe',
-  intensity = 1,
-  children,
-}) => {
+  children: React.ReactNode;
+  accentColor?: string;
+}> = ({ children, accentColor = COLORS.accentSecondary }) => {
   const frame = useCurrentFrame();
 
-  // Floating gradient shifts
-  const shiftX = Math.sin(frame * 0.03) * 60;
-  const shiftY = Math.cos(frame * 0.02) * 50;
-
   return (
-    <div
+    <AbsoluteFill
       style={{
-        position: 'absolute',
-        inset: 0,
-        backgroundColor: '#070913',
+        background: `radial-gradient(circle at 50% 20%, ${accentColor}22 0%, ${COLORS.bgElevated} 45%, ${COLORS.bgBase} 100%)`,
+        fontFamily: FONTS.ui,
+        color: COLORS.textPrimary,
         overflow: 'hidden',
-        fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
       }}
     >
-      {/* Dynamic radial gradient light bursts */}
-      <div
-        style={{
-          position: 'absolute',
-          top: `calc(15% + ${shiftY}px)`,
-          left: `calc(20% + ${shiftX}px)`,
-          width: 700,
-          height: 700,
-          borderRadius: '50%',
-          background: `radial-gradient(circle, ${primaryColor} 0%, transparent 70%)`,
-          opacity: 0.22 * intensity,
-          filter: 'blur(90px)',
-          pointerEvents: 'none',
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          bottom: `calc(15% - ${shiftY}px)`,
-          right: `calc(10% - ${shiftX}px)`,
-          width: 800,
-          height: 800,
-          borderRadius: '50%',
-          background: `radial-gradient(circle, ${secondaryColor} 0%, transparent 70%)`,
-          opacity: 0.18 * intensity,
-          filter: 'blur(100px)',
-          pointerEvents: 'none',
-        }}
-      />
-
-      {/* Cyber Grid Lines */}
+      {/* Subtle Ambient Field (zero blur cost) */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundImage: `
-            linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
-          `,
-          backgroundSize: '60px 60px',
-          backgroundPosition: `0px ${frame * 0.8}px`,
-          opacity: 0.45,
+          background: `radial-gradient(circle at 80% 78%, ${COLORS.accentPrimary}12 0%, transparent 50%)`,
           pointerEvents: 'none',
         }}
       />
 
-      {/* Floating dust particles */}
-      {PARTICLES.map((p, i) => {
-        const currentY = (p.y - frame * p.speed + 100) % 100;
-        const currentX = p.x + Math.sin((frame + i * 20) * 0.04) * 2;
+      {/* Safe-modulo floating particles */}
+      {PARTICLES.map((p) => {
+        const rawY = p.y - frame * p.speed;
+        const yPos = ((rawY % 100) + 100) % 100;
         return (
           <div
-            key={i}
+            key={p.id}
             style={{
               position: 'absolute',
-              left: `${currentX}%`,
-              top: `${currentY}%`,
+              left: `${p.x}%`,
+              top: `${yPos}%`,
               width: p.size,
               height: p.size,
               borderRadius: '50%',
-              backgroundColor: p.color,
-              opacity: p.opacity * intensity,
-              boxShadow: `0 0 ${p.size * 2}px ${p.color}`,
+              backgroundColor: p.id % 3 === 0 ? COLORS.accentPrimary : COLORS.textPrimary,
+              opacity: p.opacity,
               pointerEvents: 'none',
             }}
           />
         );
       })}
 
-      {/* Vignette Overlay */}
+      {/* Subtle Film Grain */}
       <div
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'radial-gradient(circle at center, transparent 40%, rgba(5,6,12,0.85) 100%)',
+          backgroundImage: GRAIN_SVG,
           pointerEvents: 'none',
         }}
       />
 
       {children}
-    </div>
+    </AbsoluteFill>
   );
 };

@@ -1,54 +1,39 @@
-# Guess the Meme by Its Original Sound — Starter Project
+# Guess the Meme by Its Original Sound
 
-This is a reusable, semi-manual video project. You provide two source files per round: (1) the original-source video, whose audio is used as the guessing clue, and (2) the meme video, shown in full during the reveal. The project supplies the title treatment, audio visualizer animation, countdown, tick effects, reveal treatment, backgrounds, typography, and 9:16 composition.
+A 1080×1920, 30fps multi-round vertical quiz video template built with Remotion.
 
-## First sample files
+## Folder Convention
 
-- `assets/original_sounds/ocean_meme_original.mp4` — source for the clue audio. The guessing section uses only audio from **00:15 to 00:25**; its video is never displayed during the guessing section.
-- `assets/memes/ocean_meme.mp4` — the full **11.216-second** reveal video.
-- `assets/intro_audio/intro.mp3` — the short series intro sting.
+Place episode media in `public/episodes/<episode_id>/`:
+```
+public/episodes/ep001/
+  01_original.mp4            # clue: video OR audio (.mp4 .mov .webm .mp3 .wav .m4a ...)
+  01_meme_ocean-meme.mp4     # full reveal video; slug after _meme_ becomes "Ocean Meme"
+```
 
-The sample also contains `output/episode_001.mp4`, a rendered 1080x1920 preview.
-
-## Remotion project (main reusable template)
-
-Requirements: Node.js 20+ and npm.
+## 3-Command Workflow
 
 ```bash
-npm install
+npm run scaffold -- ep001 --clue-seconds 10 --clue-start 15
+npm run validate -- ep001
+npm run render -- ep001
+```
+
+Preview interactively in Remotion Studio:
+```bash
 npm run studio
 ```
 
-Render:
+## Render on Colab
 
-```bash
-npm run render
-```
-
-The composition is `GuessTheMeme`, 1080x1920, 30 fps. Source assets are in the root `public/` folder because that is Remotion's default public directory.
-
-## Reuse for another round
-
-1. Put the original-source video in `public/original_sounds/`.
-2. Put the matching meme reveal video in `public/memes/`.
-3. Update the source paths and clue timing in `remotion/src/GuessTheMeme.tsx` (the first sample uses `ocean_meme_original.mp4`, from 15s to 25s, and `ocean_meme.mp4`).
-4. Update the composition duration in `remotion/src/Root.tsx` if the intro, clue, countdown, or reveal duration changes.
-5. Run `npm run render`.
-
-The source and reveal are separate inputs. The original source contributes audio only during the guessing stage. The meme video is shown in full during the answer reveal.
-
-## Sample timing
-
-- Intro sting: about 2.33 seconds
-- Original audio clue: starts at 15.0 seconds and lasts 10 seconds
-- Countdown: 3 seconds (3, 2, 1)
-- Reveal: full meme video (about 11.22 seconds)
-- Total: about 26.54 seconds
-
-## FFmpeg preview renderer
-
-`scripts/render.py` is included as an alternate quick preview renderer. It requires Python 3 and FFmpeg on PATH. Run `python scripts/render.py`.
-
-## Rights note
-
-Only publish audio/video you own or have permission to use. A short excerpt, a meme format, or the presence of a YouTube Content ID claim does not itself grant permission.
+1. Mount Google Drive and clone the repo.
+2. Run `bash scripts/colab_setup.sh` to install Chrome system dependencies, Node 20 (if missing), `npm ci`, and `npx remotion browser ensure`.
+3. Scaffold from your Drive episode folder:
+   ```bash
+   npm run scaffold -- ep001 --source "/content/drive/MyDrive/guess_the_meme/episodes/ep001"
+   ```
+4. Render directly to Drive:
+   ```bash
+   npm run render:ci -- ep001 --out "/content/drive/MyDrive/guess_the_meme/output"
+   ```
+   (Pass `--gl swangle` if WebGL fails on CPU-only machines.)

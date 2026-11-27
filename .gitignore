@@ -1,26 +1,7 @@
-# Dependencies
 node_modules/
-package-lock.json
-
-# Build and cache
-build/
-dist/
-.cache/
-*.tsbuildinfo
-__pycache__/
-*.py[cod]
-*$py.class
-.pytest_cache/
-
-# Temporary and intermediate render files
-output/_work_artistic/
-output/_work/
-output/qc_*.png
-output/preview_frame*.png
-output/*.tmp
-
-# OS & IDE
+out/
+public/episodes/
+output/*.mp4
+output/stills/
 .DS_Store
 Thumbs.db
-.vscode/
-.idea/

@@ -1,0 +1,6 @@
+file '/mnt/data/GUESS_THE_MEME_STARTER/output/_work/01_intro.mp4'
+file '/mnt/data/GUESS_THE_MEME_STARTER/output/_work/02_listen.mp4'
+file '/mnt/data/GUESS_THE_MEME_STARTER/output/_work/03_count_3.mp4'
+file '/mnt/data/GUESS_THE_MEME_STARTER/output/_work/03_count_2.mp4'
+file '/mnt/data/GUESS_THE_MEME_STARTER/output/_work/03_count_1.mp4'
+file '/mnt/data/GUESS_THE_MEME_STARTER/output/_work/04_reveal.mp4'

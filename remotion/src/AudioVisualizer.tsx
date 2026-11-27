@@ -1,24 +1,34 @@
 import React from 'react';
-import { interpolate, useCurrentFrame } from 'remotion';
+import { staticFile, useCurrentFrame, useVideoConfig } from 'remotion';
+import { useAudioData, visualizeAudio } from '@remotion/media-utils';
+import { COLORS } from './theme';
 
-interface AudioVisualizerProps {
-  color?: string;
-  accentColor?: string;
-  barsCount?: number;
+export const AudioVisualizer: React.FC<{
+  audioSrc: string;
+  startSeconds?: number;
+  barCount?: number;
   height?: number;
-  width?: number;
-  pulseFactor?: number;
-}
-
-export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
-  color = '#00f2fe',
-  accentColor = '#ff007a',
-  barsCount = 42,
-  height = 160,
-  width = 900,
-  pulseFactor = 1,
+  accentColor?: string;
+}> = ({
+  audioSrc,
+  startSeconds = 0,
+  barCount = 32,
+  height = 140,
+  accentColor = COLORS.accentPrimary,
 }) => {
   const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const audioData = useAudioData(staticFile(audioSrc));
+
+  const offsetFrame = frame + Math.round(startSeconds * fps);
+  const frequencies = audioData
+    ? visualizeAudio({
+        fps,
+        frame: offsetFrame,
+        audioData,
+        numberOfSamples: barCount,
+      })
+    : Array.from({ length: barCount }, () => 0.15);
 
   return (
     <div
@@ -26,37 +36,27 @@ export const AudioVisualizer: React.FC<AudioVisualizerProps> = ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 6,
-        width,
+        gap: 8,
         height,
+        width: '100%',
       }}
     >
-      {Array.from({ length: barsCount }, (_, i) => {
-        // Multi-frequency wave synthesis for audio-reactive look
-        const freq1 = Math.sin(i * 0.42 + frame * 0.22);
-        const freq2 = Math.cos(i * 0.28 - frame * 0.16);
-        const freq3 = Math.sin((i + frame * 0.5) * 0.15);
-        const centerWeight = 1 - Math.abs((i - barsCount / 2) / (barsCount / 2)) * 0.35;
-        
-        const rawAmp = Math.abs(freq1 * 0.5 + freq2 * 0.3 + freq3 * 0.2);
-        const barH = Math.max(12, rawAmp * height * centerWeight * pulseFactor);
-
-        const isPeak = rawAmp > 0.65;
+      {frequencies.map((amp, i) => {
+        const clamped = Math.max(0.08, Math.min(1, amp * 2.2));
+        const barHeight = Math.round(clamped * height);
+        const isPeak = clamped > 0.65;
 
         return (
           <div
             key={i}
             style={{
-              width: 10,
-              height: barH,
-              borderRadius: 6,
+              width: 12,
+              height: barHeight,
+              borderRadius: 999,
               background: isPeak
-                ? `linear-gradient(180deg, ${accentColor}, ${color})`
-                : `linear-gradient(180deg, ${color}, #4facfe)`,
-              boxShadow: isPeak
-                ? `0 0 16px ${accentColor}`
-                : `0 0 10px rgba(0, 242, 254, 0.45)`,
-              transition: 'height 0.05s ease',
+                ? accentColor
+                : `linear-gradient(180deg, ${COLORS.textPrimary} 0%, ${COLORS.accentSecondary} 100%)`,
+              opacity: 0.35 + clamped * 0.65,
             }}
           />
         );

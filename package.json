@@ -4,15 +4,27 @@
   "private": true,
   "scripts": {
     "studio": "remotion studio remotion/src/index.ts",
-    "render": "remotion render remotion/src/index.ts GuessTheMeme output/episode_001_remotion.mp4",
-    "still": "remotion still remotion/src/index.ts GuessTheMeme output/preview.png --frame=500"
+    "scaffold": "node scripts/scaffold.mjs",
+    "validate": "node scripts/validate.mjs",
+    "render": "node scripts/render.mjs",
+    "render:ci": "node scripts/render.mjs",
+    "still:intro": "remotion still remotion/src/index.ts GuessTheMeme output/qc_01_intro.png --frame=30",
+    "still:guess": "remotion still remotion/src/index.ts GuessTheMeme output/qc_02_guess.png --frame=200",
+    "still:countdown": "remotion still remotion/src/index.ts GuessTheMeme output/qc_03_countdown.png --frame=520",
+    "still:reveal": "remotion still remotion/src/index.ts GuessTheMeme output/qc_04_reveal.png --frame=700",
+    "still:score": "remotion still remotion/src/index.ts GuessTheMeme output/qc_05_score.png --frame=1050",
+    "still": "npm run still:intro && npm run still:guess && npm run still:countdown && npm run still:reveal && npm run still:score",
+    "check:black": "node scripts/check_no_black.mjs"
   },
   "dependencies": {
-    "@remotion/cli": "^4.0.300",
-    "@remotion/media": "^4.0.300",
-    "remotion": "^4.0.300",
+    "@remotion/cli": "4.0.300",
+    "@remotion/google-fonts": "4.0.300",
+    "@remotion/media-utils": "4.0.300",
+    "@remotion/shapes": "4.0.300",
+    "@remotion/transitions": "4.0.300",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "remotion": "4.0.300"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
